@@ -58,6 +58,8 @@ public class ConfigBatch2 {
 				.next(taskInitFichier())
 				.next(step01())
 				.next(taskIgnore())
+				.next(taskInitDebut())
+				.next(taskCheckSoldes())
 				.end()
 				.build();
 	}
@@ -97,7 +99,7 @@ public class ConfigBatch2 {
 		//ClassPathResource tab[] = {new ClassPathResource(repertoireComptes)};
 		//multiResourceItemReader.setResources(tab);
 		ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver(this.getClass().getClassLoader());
-		Resource[] resources = resolver.getResources(repertoireComptes+"/*.tsv") ;
+		Resource[] resources = resolver.getResources(repertoireComptes + "/*.tsv");
 		//multiResourceItemReader.setResources(new PathMatchingResourcePatternResolver[]{new PathMatchingResourcePatternResolver()});
 		multiResourceItemReader.setResources(resources);
 		multiResourceItemReader.setDelegate(reader2());
@@ -149,6 +151,20 @@ public class ConfigBatch2 {
 	}
 
 	@Bean
+	public Step taskInitDebut() {
+		return stepBuilderFactory.get("taskInitDebut")
+				.tasklet(initDebutTask())
+				.build();
+	}
+
+	@Bean
+	public Step taskCheckSoldes() {
+		return stepBuilderFactory.get("taskCheckSoldes")
+				.tasklet(checkSoldeTask())
+				.build();
+	}
+
+	@Bean
 	public DeleteAllTask deleteAllTask() {
 		return new DeleteAllTask();
 	}
@@ -162,5 +178,15 @@ public class ConfigBatch2 {
 	@Bean
 	public InitFichierTask initFichierTask() {
 		return new InitFichierTask();
+	}
+
+	@Bean
+	public InitDebutTask initDebutTask() {
+		return new InitDebutTask();
+	}
+
+	@Bean
+	public CheckSoldeTask checkSoldeTask() {
+		return new CheckSoldeTask();
 	}
 }

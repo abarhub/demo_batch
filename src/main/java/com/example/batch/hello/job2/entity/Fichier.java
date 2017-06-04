@@ -89,4 +89,16 @@ public class Fichier {
 	public void setNoCompte(String noCompte) {
 		this.noCompte = noCompte;
 	}
+
+	@Override
+	public String toString() {
+		return "Fichier{" +
+				"id=" + id +
+				", date=" + date +
+				", nomFichier='" + nomFichier + '\'' +
+				", noCompte='" + noCompte + '\'' +
+				", solde=" + solde +
+				", soldeFrancs=" + soldeFrancs +
+				'}';
+	}
 }
