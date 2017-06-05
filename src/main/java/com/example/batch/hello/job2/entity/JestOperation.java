@@ -1,10 +1,6 @@
-package com.example.batch.hello.job2;
+package com.example.batch.hello.job2.entity;
 
 import io.searchbox.annotations.JestId;
-
-import javax.persistence.Column;
-import java.time.LocalDate;
-import java.util.Date;
 
 /**
  * Created by Alain on 04/06/2017.
@@ -16,7 +12,7 @@ public class JestOperation {
 
 	private Long id;
 
-	private long date;
+	private String date;
 
 	private String libelle;
 
@@ -38,11 +34,11 @@ public class JestOperation {
 		this.id = id;
 	}
 
-	public long getDate() {
+	public String getDate() {
 		return date;
 	}
 
-	public void setDate(long date) {
+	public void setDate(String date) {
 		this.date = date;
 	}
 

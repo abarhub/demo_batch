@@ -1,11 +1,14 @@
 package com.example.batch.hello.job2;
 
+import com.example.batch.hello.job2.entity.JestOperation;
 import com.example.batch.hello.job2.entity.Operation;
 import com.example.batch.hello.job2.repository.FichierRepository;
 import com.example.batch.hello.job2.repository.OperationRepository;
 import io.searchbox.client.JestClient;
 import io.searchbox.client.JestClientFactory;
+import io.searchbox.client.JestResult;
 import io.searchbox.client.config.HttpClientConfig;
+import io.searchbox.core.Bulk;
 import io.searchbox.core.Index;
 import io.searchbox.indices.CreateIndex;
 import io.searchbox.indices.DeleteIndex;
@@ -22,6 +25,8 @@ import org.springframework.beans.factory.annotation.Value;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -57,42 +62,6 @@ public class JestTask implements Tasklet {
 		LOG.info("insert data");
 		insert(jestClient);
 
-
-//		Optional<Operation> optOperation = operationRepository.findTopByOrderByDateAsc();
-//
-//		if (optOperation.isPresent()) {
-//			Operation operation = optOperation.get();
-//			LOG.info("operation={}", operation);
-//			Fichier fichier = operation.getFichier();
-//			LOG.info("fichier={}", fichier);
-//			//fichier.getDate()
-//
-//			double total = operationRepository.totalOperations(fichier);
-//			LOG.info("total={}", total);
-//			double soldeInit = fichier.getSolde() - total;
-//			LOG.info("soldeInit={}", soldeInit);
-//			LocalDate date = operation.getDate().minusDays(1);
-//			LOG.info("date init={}", date);
-//
-//			Fichier f = new Fichier();
-//			f.setNomFichier("soldeinit");
-//			f.setSolde(soldeInit);
-//			f.setNoCompte(fichier.getNoCompte());
-//			f.setDate(date);
-//			f.setListeOperations(new ArrayList<>());
-//
-//			Operation operation2 = new Operation();
-//			operation2.setIgnorer(false);
-//			operation2.setFichier(f);
-//			operation2.setMontant(soldeInit);
-//			operation2.setLibelle("Solde Initial");
-//			operation2.setDate(date);
-//			f.getListeOperations().add(operation2);
-//
-//			operationRepository.save(operation2);
-//			fichierRepository.save(f);
-//		}
-
 		LOG.info("jest ok");
 		return RepeatStatus.FINISHED;
 	}
@@ -112,39 +81,72 @@ public class JestTask implements Tasklet {
 	}
 
 	private void init(JestClient client) throws IOException {
+		JestResult res;
 
-		client.execute(new DeleteIndex.Builder(index).build());
+		res=client.execute(new DeleteIndex.Builder(index).build());
+		checkJest(res);
 
-		client.execute(new CreateIndex.Builder(index).build());
+		res=client.execute(new CreateIndex.Builder(index).build());
+		checkJest(res);
 
 		PutMapping putMapping = new PutMapping.Builder(
 				index,
 				mapping,
-				"{ \"properties\" : { \"id\" : {\"type\" : \"string\"},\"date\" : {\"type\" : \"date\"},\"libelle\" : {\"type\" : \"string\"},\"montant\" : {\"type\" : \"double\"},} }"
+				"{ \"" + mapping + "\" : { " +
+						"\"properties\" : { " +
+						"\"id\" : {\"type\" : \"string\"}, " +
+						"\"date\" : {\"type\" : \"date\",\"format\": \"yyyy-MM-dd\"}, " +
+						"\"libelle\" : {\"type\" : \"string\"}, " +
+						"\"montant\" : {\"type\" : \"double\"} } } }"
 		).build();
-		client.execute(putMapping);
+		res = client.execute(putMapping);
+		checkJest(res);
+	}
+
+	private void checkJest(JestResult res) {
+		if (res != null) {
+			if (!res.isSucceeded()) {
+				LOG.error("Error Jest (" + res.getResponseCode() + ") : " + res.getErrorMessage());
+				throw new IllegalStateException("Error Jest : " + res.getErrorMessage());
+			}
+		}
 	}
 
 	private void insert(JestClient jestClient) throws IOException {
 		List<Operation> list = operationRepository.findAllOperationConsolide();
 		if (list != null && !list.isEmpty()) {
 
+			List<Index> liste=new ArrayList<>();
 			for (Operation o : list) {
 
 				JestOperation j = new JestOperation();
 				j.setId(o.getId());
-				j.setDate(conv(o.getDate()).getTime());
+				//j.setDate(conv(o.getDate()).getTime());
+				j.setDate(conv2(o.getDate()));
 				j.setLibelle(o.getLibelle());
 				j.setMontant(o.getMontant());
 
 				Index index = new Index.Builder(j).index(this.index).type(mapping).build();
-				jestClient.execute(index);
+				liste.add(index);
 			}
+
+			Bulk bulk = new Bulk.Builder()
+					.defaultIndex(index)
+					.defaultType(mapping)
+					.addAction(liste)
+					.build();
+
+			JestResult res=jestClient.execute(bulk);
+			checkJest(res);
 		}
 	}
 
 	private Date conv(LocalDate localDate) {
 		Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
 		return date;
+	}
+
+	private String conv2(LocalDate localDate) {
+		return localDate.format(DateTimeFormatter.ISO_LOCAL_DATE);
 	}
 }

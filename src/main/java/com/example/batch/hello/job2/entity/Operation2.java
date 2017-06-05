@@ -1,6 +1,5 @@
 package com.example.batch.hello.job2.entity;
 
-import io.searchbox.annotations.JestId;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
@@ -10,7 +9,7 @@ import java.time.LocalDate;
  * Created by Alain on 07/05/2017.
  */
 @Entity
-public class Operation {
+public class Operation2 {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -27,13 +26,6 @@ public class Operation {
 
 	@Column(name = "montant2")
 	private double montantFrancs;
-
-	@Column(name = "ignorer")
-	@Type(type = "org.hibernate.type.NumericBooleanType")
-	private boolean ignorer;
-
-	@ManyToOne
-	private Fichier fichier;
 
 	public Long getId() {
 		return id;
@@ -75,33 +67,14 @@ public class Operation {
 		this.montantFrancs = montantFrancs;
 	}
 
-	public Fichier getFichier() {
-		return fichier;
-	}
-
-	public void setFichier(Fichier fichier) {
-		this.fichier = fichier;
-	}
-
-	public boolean isIgnorer() {
-		return ignorer;
-	}
-
-	public void setIgnorer(boolean ignorer) {
-		this.ignorer = ignorer;
-	}
-
 	@Override
 	public String toString() {
-		return "Operation{" +
+		return "Operation2{" +
 				"id=" + id +
 				", date=" + date +
 				", libelle='" + libelle + '\'' +
 				", montant=" + montant +
 				", montantFrancs=" + montantFrancs +
-				", ignorer=" + ignorer +
-				", fichier=" + fichier +
 				'}';
 	}
-
 }

@@ -61,6 +61,7 @@ public class ConfigBatch2 {
 				.next(taskInitDebut())
 				.next(taskCheckSoldes())
 				.next(taskJest())
+				.next(taskDb())
 				.end()
 				.build();
 	}
@@ -173,6 +174,13 @@ public class ConfigBatch2 {
 	}
 
 	@Bean
+	public Step taskDb() {
+		return stepBuilderFactory.get("taskDb")
+				.tasklet(dbTask())
+				.build();
+	}
+
+	@Bean
 	public DeleteAllTask deleteAllTask() {
 		return new DeleteAllTask();
 	}
@@ -201,5 +209,10 @@ public class ConfigBatch2 {
 	@Bean
 	public JestTask jestTask() {
 		return new JestTask();
+	}
+
+	@Bean
+	public DbTask dbTask() {
+		return new DbTask();
 	}
 }
