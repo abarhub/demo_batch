@@ -27,4 +27,7 @@ public interface OperationRepository extends CrudRepository<Operation, Long> {
 
 	@Query("select sum(o.montant) from Operation o where o.date<?1 and o.ignorer=false order by o.date")
 	double totalOperationConsolide(LocalDate date);
+
+	@Query("select o from Operation o where o.ignorer=false order by o.date")
+	List<Operation> findAllOperationConsolide();
 }

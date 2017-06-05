@@ -60,6 +60,7 @@ public class ConfigBatch2 {
 				.next(taskIgnore())
 				.next(taskInitDebut())
 				.next(taskCheckSoldes())
+				.next(taskJest())
 				.end()
 				.build();
 	}
@@ -165,6 +166,13 @@ public class ConfigBatch2 {
 	}
 
 	@Bean
+	public Step taskJest() {
+		return stepBuilderFactory.get("taskJest")
+				.tasklet(jestTask())
+				.build();
+	}
+
+	@Bean
 	public DeleteAllTask deleteAllTask() {
 		return new DeleteAllTask();
 	}
@@ -188,5 +196,10 @@ public class ConfigBatch2 {
 	@Bean
 	public CheckSoldeTask checkSoldeTask() {
 		return new CheckSoldeTask();
+	}
+
+	@Bean
+	public JestTask jestTask() {
+		return new JestTask();
 	}
 }
