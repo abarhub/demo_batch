@@ -27,6 +27,9 @@ public class Operation2 {
 	@Column(name = "montant2")
 	private double montantFrancs;
 
+	@Column(name = "no_compte")
+	private String noCompte;
+
 	public Long getId() {
 		return id;
 	}
@@ -67,6 +70,14 @@ public class Operation2 {
 		this.montantFrancs = montantFrancs;
 	}
 
+	public String getNoCompte() {
+		return noCompte;
+	}
+
+	public void setNoCompte(String noCompte) {
+		this.noCompte = noCompte;
+	}
+
 	@Override
 	public String toString() {
 		return "Operation2{" +
@@ -75,6 +86,7 @@ public class Operation2 {
 				", libelle='" + libelle + '\'' +
 				", montant=" + montant +
 				", montantFrancs=" + montantFrancs +
+				", noCompte='" + noCompte + '\'' +
 				'}';
 	}
 }
