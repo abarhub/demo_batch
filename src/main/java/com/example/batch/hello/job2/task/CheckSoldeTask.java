@@ -1,4 +1,4 @@
-package com.example.batch.hello.job2;
+package com.example.batch.hello.job2.task;
 
 import com.example.batch.hello.job2.entity.Fichier;
 import com.example.batch.hello.job2.entity.Operation;
@@ -29,7 +29,7 @@ public class CheckSoldeTask implements Tasklet {
 
 	private static final Logger LOG = LoggerFactory.getLogger(CheckSoldeTask.class);
 
-	private static final Splitter SPLITTER=Splitter.on(",")
+	private static final Splitter SPLITTER = Splitter.on(",")
 			.omitEmptyStrings()
 			.trimResults();
 
@@ -52,14 +52,15 @@ public class CheckSoldeTask implements Tasklet {
 		Iterable<Fichier> iter = fichierRepository.findAll();
 
 		Map<String, List<Fichier>> map = StreamSupport.stream(iter.spliterator(), false)
+				.filter(x -> x.getNoCompte() != null && !x.getNoCompte().trim().isEmpty())
 				.collect(groupingBy(Fichier::getNoCompte));
 
 		for (Map.Entry<String, List<Fichier>> entry : map.entrySet()) {
 
-			String noCompte=entry.getKey();
+			String noCompte = entry.getKey();
 			List<Fichier> liste = entry.getValue();
 
-			if(compteAIgnorer(noCompte)||true){
+			if (compteAIgnorer(noCompte) || true) {
 				LOG.info("ignore le compte {} ...", noCompte);
 				continue;
 			} else {
@@ -74,11 +75,11 @@ public class CheckSoldeTask implements Tasklet {
 	}
 
 	private boolean compteAIgnorer(String noCompte) {
-		if(noCompte==null||noCompte.trim().isEmpty()){
+		if (noCompte == null || noCompte.trim().isEmpty()) {
 			return true;
-		} else if(comptesAIgnorer!=null&&!comptesAIgnorer.trim().isEmpty()){
-			List<String> liste=getListeCompteAIgnorer();
-			if(liste!=null){
+		} else if (comptesAIgnorer != null && !comptesAIgnorer.trim().isEmpty()) {
+			List<String> liste = getListeCompteAIgnorer();
+			if (liste != null) {
 				return liste.contains(noCompte);
 			}
 		}
@@ -86,7 +87,7 @@ public class CheckSoldeTask implements Tasklet {
 		return false;
 	}
 
-	private List<String> getListeCompteAIgnorer(){
+	private List<String> getListeCompteAIgnorer() {
 		return SPLITTER.splitToList(comptesAIgnorer);
 	}
 
@@ -99,10 +100,10 @@ public class CheckSoldeTask implements Tasklet {
 
 			Optional<Double> optTotal = operationRepository.totalOperations(f);
 
-			double total=0;
+			double total = 0;
 
-			if(optTotal.isPresent()){
-				total=optTotal.get();
+			if (optTotal.isPresent()) {
+				total = optTotal.get();
 			} else {
 				LOG.info("Fichier {} ignore ?", f.getNomFichier());
 				//return;

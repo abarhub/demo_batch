@@ -42,7 +42,9 @@ public class CsvProcessor implements ItemProcessor<CsvItem, OperationComptableIt
 		if (s == null || s.trim().length() == 0) {
 			return 0.0;
 		} else {
-			return Double.parseDouble(s.trim().replace(',', '.'));
+			String s2 = s.trim().replace(',', '.');
+			s2 = s2.replace(" ", "");
+			return Double.parseDouble(s2);
 		}
 	}
 

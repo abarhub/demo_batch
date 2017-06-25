@@ -2,6 +2,8 @@ package com.example.batch.config;
 
 import com.example.batch.hello.job1.JobCompletionNotificationListener;
 import com.example.batch.hello.job2.*;
+import com.example.batch.hello.job2.service.FindRessources;
+import com.example.batch.hello.job2.task.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;
@@ -22,11 +24,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.core.io.support.ResourcePatternResolver;
 
 import javax.sql.DataSource;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Created by Alain on 07/05/2017.
@@ -48,6 +49,9 @@ public class ConfigBatch2 {
 
 	@Autowired
 	private DataSource dataSource;
+
+	@Autowired
+	private FindRessources findRessources;
 
 	@Bean
 	public Job processCsv(JobCompletionNotificationListener listener) throws IOException {
@@ -100,10 +104,11 @@ public class ConfigBatch2 {
 		MultiResourceItemReader multiResourceItemReader = new MultiResourceItemReader();
 		//ClassPathResource tab[] = {new ClassPathResource(repertoireComptes)};
 		//multiResourceItemReader.setResources(tab);
-		ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver(this.getClass().getClassLoader());
-		Resource[] resources = resolver.getResources(repertoireComptes + "/**/*.tsv");
+		//ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver(this.getClass().getClassLoader());
+		//Resource[] resources = resolver.getResources(repertoireComptes + "/**/*.tsv");
+		List<Resource> listeRessources = findRessources.getListRessources();
 		//multiResourceItemReader.setResources(new PathMatchingResourcePatternResolver[]{new PathMatchingResourcePatternResolver()});
-		multiResourceItemReader.setResources(resources);
+		multiResourceItemReader.setResources(listeRessources.toArray(new Resource[0]));
 		multiResourceItemReader.setDelegate(reader2());
 		return multiResourceItemReader;
 	}

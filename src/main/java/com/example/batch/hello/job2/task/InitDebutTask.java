@@ -1,4 +1,4 @@
-package com.example.batch.hello.job2;
+package com.example.batch.hello.job2.task;
 
 import com.example.batch.hello.job2.entity.Fichier;
 import com.example.batch.hello.job2.entity.Operation;
