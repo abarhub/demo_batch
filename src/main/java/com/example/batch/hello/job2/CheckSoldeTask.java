@@ -4,6 +4,7 @@ import com.example.batch.hello.job2.entity.Fichier;
 import com.example.batch.hello.job2.entity.Operation;
 import com.example.batch.hello.job2.repository.FichierRepository;
 import com.example.batch.hello.job2.repository.OperationRepository;
+import com.google.common.base.Splitter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.StepContribution;
@@ -14,6 +15,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.StreamSupport;
+
+import static java.util.stream.Collectors.groupingBy;
 
 /**
  * Created by Alain on 07/05/2017.
@@ -22,8 +29,15 @@ public class CheckSoldeTask implements Tasklet {
 
 	private static final Logger LOG = LoggerFactory.getLogger(CheckSoldeTask.class);
 
+	private static final Splitter SPLITTER=Splitter.on(",")
+			.omitEmptyStrings()
+			.trimResults();
+
 	@Value("${app.rep_comptes}")
 	private String repertoireComptes;
+
+	@Value("${app.comptes_ignorer:}")
+	private String comptesAIgnorer;
 
 	@Autowired
 	private OperationRepository operationRepository;
@@ -37,20 +51,62 @@ public class CheckSoldeTask implements Tasklet {
 
 		Iterable<Fichier> iter = fichierRepository.findAll();
 
-		iter.forEach(f -> verifieFichier(f));
+		Map<String, List<Fichier>> map = StreamSupport.stream(iter.spliterator(), false)
+				.collect(groupingBy(Fichier::getNoCompte));
+
+		for (Map.Entry<String, List<Fichier>> entry : map.entrySet()) {
+
+			String noCompte=entry.getKey();
+			List<Fichier> liste = entry.getValue();
+
+			if(compteAIgnorer(noCompte)||true){
+				LOG.info("ignore le compte {} ...", noCompte);
+				continue;
+			} else {
+				LOG.info("traitement du compte {} ...", noCompte);
+			}
+
+			liste.forEach(f -> verifieFichier(f));
+		}
 
 		LOG.info("checkSolde ok");
 		return RepeatStatus.FINISHED;
 	}
 
+	private boolean compteAIgnorer(String noCompte) {
+		if(noCompte==null||noCompte.trim().isEmpty()){
+			return true;
+		} else if(comptesAIgnorer!=null&&!comptesAIgnorer.trim().isEmpty()){
+			List<String> liste=getListeCompteAIgnorer();
+			if(liste!=null){
+				return liste.contains(noCompte);
+			}
+		}
+
+		return false;
+	}
+
+	private List<String> getListeCompteAIgnorer(){
+		return SPLITTER.splitToList(comptesAIgnorer);
+	}
+
 	private void verifieFichier(Fichier f) {
-		if (f.getNomFichier().equals("soldeinit")) {
+		if (f.isSoldeInitial()) {
 			LOG.info("Fichier du solde initial ignore : " + f.getNomFichier());
 		} else {
 			LOG.info("Traitement fichier {}", f.getNomFichier());
 			double soldeFinal = f.getSolde();
 
-			double total = operationRepository.totalOperations(f);
+			Optional<Double> optTotal = operationRepository.totalOperations(f);
+
+			double total=0;
+
+			if(optTotal.isPresent()){
+				total=optTotal.get();
+			} else {
+				LOG.info("Fichier {} ignore ?", f.getNomFichier());
+				//return;
+			}
 
 			double total2 = 0.0;
 			LocalDate d = null;
@@ -76,7 +132,7 @@ public class CheckSoldeTask implements Tasklet {
 				LOG.info("1ere operation : {}", d);
 			}
 
-			double totalAvantFichier = operationRepository.totalOperationConsolide(d);
+			double totalAvantFichier = operationRepository.totalOperationConsolide(d, f.getNoCompte());
 
 			LOG.info("totalAvantFichier={}", totalAvantFichier);
 			LOG.info("soldeFinal={}", soldeFinal);

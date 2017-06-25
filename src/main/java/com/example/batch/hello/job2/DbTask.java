@@ -67,6 +67,7 @@ public class DbTask implements Tasklet {
 				o2.setLibelle(o.getLibelle());
 				o2.setMontant(o.getMontant());
 				o2.setMontantFrancs(o.getMontantFrancs());
+				o2.setNoCompte(o.getFichier().getNoCompte());
 				liste.add(o2);
 			}
 		}

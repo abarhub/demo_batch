@@ -14,8 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Created by Alain on 07/05/2017.
@@ -37,16 +36,42 @@ public class InitDebutTask implements Tasklet {
 	public RepeatStatus execute(StepContribution stepContribution, ChunkContext chunkContext) throws Exception {
 		LOG.info("init debut ...");
 
-		Optional<Operation> optOperation = operationRepository.findTopByOrderByDateAsc();
+		Iterable<Fichier> iter = fichierRepository.findAll();
 
-		if (optOperation.isPresent()) {
-			Operation operation = optOperation.get();
+		List<Fichier> liste2 = new ArrayList<>();
+
+		Set<String> setComptes = new TreeSet<>();
+
+		for (Fichier f : iter) {
+			liste2.add(f);
+			if (f.getNoCompte() != null && !f.getNoCompte().trim().isEmpty()) {
+				setComptes.add(f.getNoCompte());
+			}
+		}
+
+		for (String noCompte : setComptes) {
+			calculSoldeInit(noCompte);
+		}
+
+		LOG.info("init debut ok");
+		return RepeatStatus.FINISHED;
+	}
+
+	private void calculSoldeInit(String noCompte) {
+		List<Operation> listOperation = operationRepository.findTopByNoCompteOrderByDateAsc(noCompte);
+
+		if (listOperation != null && !listOperation.isEmpty()) {
+			Operation operation = listOperation.get(0);
 			LOG.info("operation={}", operation);
 			Fichier fichier = operation.getFichier();
 			LOG.info("fichier={}", fichier);
 			//fichier.getDate()
 
-			double total = operationRepository.totalOperations(fichier);
+			Optional<Double> optTotal = operationRepository.totalOperations(fichier);
+			double total=0.0;
+			if(optTotal.isPresent()){
+				total=optTotal.get();
+			}
 			LOG.info("total={}", total);
 			double soldeInit = fichier.getSolde() - total;
 			LOG.info("soldeInit={}", soldeInit);
@@ -54,11 +79,12 @@ public class InitDebutTask implements Tasklet {
 			LOG.info("date init={}", date);
 
 			Fichier f = new Fichier();
-			f.setNomFichier("soldeinit");
+			f.setNomFichier("soldeinit_"+noCompte);
 			f.setSolde(soldeInit);
 			f.setNoCompte(fichier.getNoCompte());
 			f.setDate(date);
 			f.setListeOperations(new ArrayList<>());
+			f.setSoldeInitial(true);
 
 			Operation operation2 = new Operation();
 			operation2.setIgnorer(false);
@@ -71,9 +97,5 @@ public class InitDebutTask implements Tasklet {
 			operationRepository.save(operation2);
 			fichierRepository.save(f);
 		}
-
-		LOG.info("init debut ok");
-		return RepeatStatus.FINISHED;
 	}
-
 }

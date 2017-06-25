@@ -48,13 +48,13 @@ public class InitFichierTask implements Tasklet {
 	public RepeatStatus execute(StepContribution stepContribution, ChunkContext chunkContext) throws Exception {
 		LOG.info("init ...");
 		ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver(this.getClass().getClassLoader());
-		Resource[] resources = resolver.getResources(repertoireComptes + "/*.tsv");
+		Resource[] resources = resolver.getResources(repertoireComptes + "/**/*.tsv");
 
 		if (resources != null && resources.length > 0) {
 			for (Resource r : resources) {
 				boolean analyseOk = false;
 				String nomFichier = r.getFilename();
-				LOG.info("analyse du fichier {}", nomFichier);
+				LOG.info("analyse du fichier {} ({})", nomFichier, r.getFile());
 				Charset charset = calculCharSet(r);
 				LOG.info("charset={}", charset);
 				try (InputStream in = r.getInputStream()) {

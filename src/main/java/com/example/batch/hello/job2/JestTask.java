@@ -97,7 +97,9 @@ public class JestTask implements Tasklet {
 						"\"id\" : {\"type\" : \"string\"}, " +
 						"\"date\" : {\"type\" : \"date\",\"format\": \"yyyy-MM-dd\"}, " +
 						"\"libelle\" : {\"type\" : \"string\"}, " +
-						"\"montant\" : {\"type\" : \"double\"} } } }"
+						"\"montant\" : {\"type\" : \"double\"}, " +
+						"\"noCompte\" : {\"type\" : \"string\"} " +
+						"} } }"
 		).build();
 		res = client.execute(putMapping);
 		checkJest(res);
@@ -125,6 +127,7 @@ public class JestTask implements Tasklet {
 				j.setDate(conv2(o.getDate()));
 				j.setLibelle(o.getLibelle());
 				j.setMontant(o.getMontant());
+				j.setNoCompte(o.getFichier().getNoCompte());
 
 				Index index = new Index.Builder(j).index(this.index).type(mapping).build();
 				liste.add(index);

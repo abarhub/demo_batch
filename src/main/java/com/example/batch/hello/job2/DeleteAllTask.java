@@ -1,6 +1,7 @@
 package com.example.batch.hello.job2;
 
 import com.example.batch.hello.job2.repository.FichierRepository;
+import com.example.batch.hello.job2.repository.Operation2Repository;
 import com.example.batch.hello.job2.repository.OperationRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,10 +28,14 @@ public class DeleteAllTask implements Tasklet {
 	@Autowired
 	private FichierRepository fichierRepository;
 
+	@Autowired
+	private Operation2Repository operation2Repository;
+
 	@Override
 	@Transactional
 	public RepeatStatus execute(StepContribution stepContribution, ChunkContext chunkContext) throws Exception {
 		LOG.info("delete all ...");
+		operation2Repository.deleteAll();
 		operationRepository.deleteAll();
 		fichierRepository.deleteAll();
 		LOG.info("delete all ok");

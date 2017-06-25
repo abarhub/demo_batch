@@ -18,6 +18,8 @@ public class JestOperation {
 
 	private double montant;
 
+	private String noCompte;
+
 	public String getDocumentId() {
 		return documentId;
 	}
@@ -56,5 +58,13 @@ public class JestOperation {
 
 	public void setMontant(double montant) {
 		this.montant = montant;
+	}
+
+	public String getNoCompte() {
+		return noCompte;
+	}
+
+	public void setNoCompte(String noCompte) {
+		this.noCompte = noCompte;
 	}
 }

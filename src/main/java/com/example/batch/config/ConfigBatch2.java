@@ -60,8 +60,8 @@ public class ConfigBatch2 {
 				.next(taskIgnore())
 				.next(taskInitDebut())
 				.next(taskCheckSoldes())
-				.next(taskJest())
 				.next(taskDb())
+				.next(taskJest())
 				.end()
 				.build();
 	}
@@ -101,7 +101,7 @@ public class ConfigBatch2 {
 		//ClassPathResource tab[] = {new ClassPathResource(repertoireComptes)};
 		//multiResourceItemReader.setResources(tab);
 		ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver(this.getClass().getClassLoader());
-		Resource[] resources = resolver.getResources(repertoireComptes + "/*.tsv");
+		Resource[] resources = resolver.getResources(repertoireComptes + "/**/*.tsv");
 		//multiResourceItemReader.setResources(new PathMatchingResourcePatternResolver[]{new PathMatchingResourcePatternResolver()});
 		multiResourceItemReader.setResources(resources);
 		multiResourceItemReader.setDelegate(reader2());

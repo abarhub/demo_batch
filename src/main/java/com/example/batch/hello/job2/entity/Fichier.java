@@ -1,5 +1,7 @@
 package com.example.batch.hello.job2.entity;
 
+import org.hibernate.annotations.Type;
+
 import javax.persistence.Id;
 
 import javax.persistence.*;
@@ -33,6 +35,10 @@ public class Fichier {
 
 	@OneToMany(mappedBy="fichier")
 	private List<Operation> listeOperations;
+
+	@Column(name = "soldeInitial",nullable = false)
+	@Type(type = "org.hibernate.type.NumericBooleanType")
+	private boolean soldeInitial;
 
 	public Long getId() {
 		return id;
@@ -90,6 +96,14 @@ public class Fichier {
 		this.noCompte = noCompte;
 	}
 
+	public boolean isSoldeInitial() {
+		return soldeInitial;
+	}
+
+	public void setSoldeInitial(boolean soldeInitial) {
+		this.soldeInitial = soldeInitial;
+	}
+
 	@Override
 	public String toString() {
 		return "Fichier{" +
@@ -99,6 +113,7 @@ public class Fichier {
 				", noCompte='" + noCompte + '\'' +
 				", solde=" + solde +
 				", soldeFrancs=" + soldeFrancs +
+				", soldeInitial=" + soldeInitial +
 				'}';
 	}
 }
