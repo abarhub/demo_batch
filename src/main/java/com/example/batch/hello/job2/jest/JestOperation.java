@@ -1,4 +1,4 @@
-package com.example.batch.hello.job2.entity;
+package com.example.batch.hello.job2.jest;
 
 import io.searchbox.annotations.JestId;
 

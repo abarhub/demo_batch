@@ -1,7 +1,10 @@
 package com.example.batch.config;
 
 import com.example.batch.hello.job1.JobCompletionNotificationListener;
-import com.example.batch.hello.job2.*;
+import com.example.batch.hello.job2.CsvItem;
+import com.example.batch.hello.job2.CsvProcessor;
+import com.example.batch.hello.job2.OperationComptableItem;
+import com.example.batch.hello.job2.WriterJpa;
 import com.example.batch.hello.job2.service.FindRessources;
 import com.example.batch.hello.job2.task.*;
 import org.slf4j.Logger;
@@ -66,6 +69,7 @@ public class ConfigBatch2 {
 				.next(taskCheckSoldes())
 				.next(taskDb())
 				.next(taskJest())
+				.next(taskJest2())
 				.end()
 				.build();
 	}
@@ -179,6 +183,13 @@ public class ConfigBatch2 {
 	}
 
 	@Bean
+	public Step taskJest2() {
+		return stepBuilderFactory.get("taskJest2")
+				.tasklet(jest2Task())
+				.build();
+	}
+
+	@Bean
 	public Step taskDb() {
 		return stepBuilderFactory.get("taskDb")
 				.tasklet(dbTask())
@@ -214,6 +225,11 @@ public class ConfigBatch2 {
 	@Bean
 	public JestTask jestTask() {
 		return new JestTask();
+	}
+
+	@Bean
+	public Jest2Task jest2Task() {
+		return new Jest2Task();
 	}
 
 	@Bean

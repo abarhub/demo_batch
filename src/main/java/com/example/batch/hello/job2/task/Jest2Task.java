@@ -1,10 +1,11 @@
 package com.example.batch.hello.job2.task;
 
+import com.example.batch.hello.job2.entity.Solde;
 import com.example.batch.hello.job2.jest.JestOperation;
 import com.example.batch.hello.job2.entity.Operation2;
-import com.example.batch.hello.job2.repository.FichierRepository;
+import com.example.batch.hello.job2.jest.JestSolde;
 import com.example.batch.hello.job2.repository.Operation2Repository;
-import com.example.batch.hello.job2.repository.OperationRepository;
+import com.example.batch.hello.job2.repository.SoldeRepository;
 import com.google.common.collect.Lists;
 import io.searchbox.client.JestClient;
 import io.searchbox.client.JestClientFactory;
@@ -22,7 +23,6 @@ import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -35,28 +35,19 @@ import java.util.List;
 /**
  * Created by Alain on 07/05/2017.
  */
-public class JestTask implements Tasklet {
+public class Jest2Task implements Tasklet {
 
-	private static final Logger LOG = LoggerFactory.getLogger(JestTask.class);
+	private static final Logger LOG = LoggerFactory.getLogger(Jest2Task.class);
 
-	private static final String index = "operation";
-	private static final String mapping = "toperation";
-
-	@Value("${app.rep_comptes}")
-	private String repertoireComptes;
+	private static final String index = "solde";
+	private static final String mapping = "tsolde";
 
 	@Autowired
-	private OperationRepository operationRepository;
-
-	@Autowired
-	private FichierRepository fichierRepository;
-
-	@Autowired
-	private Operation2Repository operation2Repository;
+	private SoldeRepository soldeRepository;
 
 	@Override
 	public RepeatStatus execute(StepContribution stepContribution, ChunkContext chunkContext) throws Exception {
-		LOG.info("jest ...");
+		LOG.info("jest2 ...");
 
 		LOG.info("connect ES");
 		JestClient jestClient = createJest();
@@ -67,7 +58,7 @@ public class JestTask implements Tasklet {
 		LOG.info("insert data");
 		insert(jestClient);
 
-		LOG.info("jest ok");
+		LOG.info("jest2 ok");
 		return RepeatStatus.FINISHED;
 	}
 
@@ -89,7 +80,7 @@ public class JestTask implements Tasklet {
 		JestResult res;
 
 		res = client.execute(new DeleteIndex.Builder(index).build());
-		checkJest(res);
+		//checkJest(res);
 
 		res = client.execute(new CreateIndex.Builder(index).build());
 		checkJest(res);
@@ -101,8 +92,8 @@ public class JestTask implements Tasklet {
 						"\"properties\" : { " +
 						"\"id\" : {\"type\" : \"string\"}, " +
 						"\"date\" : {\"type\" : \"date\",\"format\": \"yyyy-MM-dd\"}, " +
-						"\"libelle\" : {\"type\" : \"string\"}, " +
 						"\"montant\" : {\"type\" : \"double\"}, " +
+						"\"solde\" : {\"type\" : \"double\"}, " +
 						"\"noCompte\" : {\"type\" : \"string\"} " +
 						"} } }"
 		).build();
@@ -120,20 +111,20 @@ public class JestTask implements Tasklet {
 	}
 
 	private void insert(JestClient jestClient) throws IOException {
-		List<Operation2> list = Lists.newArrayList(operation2Repository.findAll());
+		List<Solde> list = Lists.newArrayList(soldeRepository.findAll());
 		//operationRepository.findAllOperationConsolide();
 		if (list != null && !list.isEmpty()) {
 
 			List<Index> liste = new ArrayList<>();
-			for (Operation2 o : list) {
+			for (Solde o : list) {
 
-				JestOperation j = new JestOperation();
+				JestSolde j = new JestSolde();
 				j.setId(o.getId());
 				//j.setDate(conv(o.getDate()).getTime());
 				j.setDate(conv2(o.getDate()));
-				j.setLibelle(o.getLibelle());
 				j.setMontant(o.getMontant());
 				j.setNoCompte(o.getNoCompte());
+				j.setSolde(o.getSolde());
 
 				Index index = new Index.Builder(j).index(this.index).type(mapping).build();
 				liste.add(index);
